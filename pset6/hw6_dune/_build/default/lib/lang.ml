@@ -8,37 +8,30 @@ exception CustomException of typ
 
 (* Utility functions from hw4 *)
 
-let rec fv = function
-  | TmTrue | TmFalse | TmUnit | TmZero -> SS.empty
-  | TmIf (x, y, z) -> SS.union (SS.union (fv x) (fv y)) (fv z)
-  | TmSucc t | TmPred t | TmIsZero t -> fv t
+let rec fv (t: term) : SS.t = 
+  match t with
   | TmVar x -> SS.singleton x
-  | TmAbs (v, _, body) -> SS.diff (fv body) (SS.singleton v)
-  | TmCase (t0, branches) ->
-      let fv_branches = List.fold_left (fun acc (_, v, t) ->
-        SS.union acc (SS.diff (fv t) (SS.singleton v))
-      ) SS.empty branches
-      in SS.union (fv t0) fv_branches
+
+  | TmSucc t1 | TmPred t1 | TmIsZero t1 
+  | TmVariant (_, t1, _) | TmRef t1 | TmBang t1 
+  | TmRaise t1 | TmIsNull (_, t1) -> fv t1
+
+  | TmAbs (x, _, t1) -> SS.remove x (fv t1)
+  | TmApp (t1, t2) | TmAssn (t1, t2) | TmTry (t1, t2) -> SS.union (fv t1) (fv t2)
+  | TmIf (x, y, z) -> SS.union (SS.union (fv x) (fv y)) (fv z)
+
+  | TmCase (t1, cs) ->
+    SS.union (fv t1) (List.fold_left (fun acc (_, x, t') -> 
+      SS.diff acc (SS.singleton x) |> SS.union (fv t'))
+      SS.empty cs)
+
   | _ -> SS.empty  (* Ensure all term types are covered; this is a placeholder *)
 
 let fresh_var (vars : SS.t) =
   match SS.max_elt_opt vars with Some var -> var ^ "0" | None -> "x0"
 
-let raise_tp_exn label =
-  match label with
-  | "not_found" -> raise (CustomException (TVariant [("not_found", TUnit)]))
-  | "duplicate_var" -> raise (CustomException (TVariant [("duplicate_var", TUnit)]))
-  | "parse_error" -> raise (CustomException (TVariant [("parse_error", TUnit)]))
-  | "not_abs" -> raise (CustomException (TVariant [("not_abs", TUnit)]))
-  | "capture_exception" -> raise (CustomException (TVariant [("capture_exception", TUnit)]))
-  | "type_error" -> raise (CustomException (TVariant [("type_error", TUnit)]))
-  | "store_error" -> raise (CustomException (TVariant [("store_error", TUnit)]))
-  | "value_error" -> raise (CustomException (TVariant [("value_error", TUnit)]))
-  | "type_store_error" -> raise (CustomException (TVariant [("type_store_error", TUnit)]))
-  | "null_pointer" -> raise (CustomException (TVariant [("null_pointer", TUnit)]))
-  | "divide_by_zero" -> raise (CustomException (TVariant [("divide_by_zero", TUnit)]))
-  | "overflow" -> raise (CustomException (TVariant [("overflow", TUnit)]))
-  | _ -> raise (CustomException (TVariant [("other", TUnit)]))
+let exn' (l: label) (t: term) : term =
+  TmVariant(l, t, tp_exn)
 
 (* Small-step evaluation *)
 
@@ -53,279 +46,199 @@ let rec is_num_val = function
   | TmSucc v when is_num_val v -> true
   | _ -> false
 
-and is_val = function
-  | TmTrue | TmFalse | TmUnit | TmAbs (_, _, _) -> true
-  | TmLoc _ -> true
-  | v -> is_num_val v
+let is_val (t: term) : bool = 
+  if is_num_val t then true else
+  (match t with
+  | TmTrue | TmFalse | TmUnit | TmAbs _ | TmNull -> true
+  | _ -> false)
 
-(* 
 let rec subst (x : string) (s : term) (t : term) : term =
-  match t with
-  | TmVar y when x = y -> s
-  | TmVar _ -> t
-  | TmAbs (v, tp1, t1) ->
-    if x = v then TmAbs (v, tp1, t1)
-    else if SS.mem v (fv s) then
-      let fresh = fresh_var (SS.union (fv s) (fv t1)) in
-      TmAbs (fresh, tp1, subst x s t1) 
-    else
-      TmAbs (v, tp1, subst x s t1)
+  (match t with
+  | TmVar v -> if v = x then s else TmVar v
   | TmApp (t1, t2) -> TmApp (subst x s t1, subst x s t2)
-  | TmIf (t1, t2, t3) -> TmIf (subst x s t1, subst x s t2, subst x s t3)
-  | TmSucc t1 -> TmSucc (subst x s t1)
-  | TmPred t1 -> TmPred (subst x s t1)
-  | TmIsZero t1 -> TmIsZero (subst x s t1)
-  | TmVariant (lbl, v, tp) -> TmVariant (lbl, subst x s v, tp)
-  | TmCase (t1, branches) ->
-      let branches' = List.map (fun (l, x, t) -> (l, x, subst x s t)) branches in
-      TmCase (subst x s t1, branches')
-  | TmRef t -> TmRef (subst x s t)
-  | TmBang t -> TmBang (subst x s t)
-  | TmAssn (t1, t2) -> TmAssn (subst x s t1, subst x s t2)
-  | TmRaise t -> TmRaise (subst x s t)
-  | TmTry (t1, t2) -> TmTry (subst x s t1, subst x s t2)
-  | TmIsNull (tp, t) -> TmIsNull (tp, subst x s t)
-  | _ -> t
+  | TmAbs (v, ty, t1) ->
+      if x = v then TmAbs (v, ty, t1)
+      else if (SS.mem v (fv s)) then 
+        let new_v = fresh_var (SS.union (fv t1) (fv s)) in
+        let t1' = subst v (TmVar new_v) t1 in
+        TmAbs (new_v, ty, subst x s t1')
+      else
+        TmAbs (v, ty, subst x s t1)
 
-let rec cbv (t : term) (mu : store) : (term * store) option =
-  match t with
+  | TmIf (t1, t2, t3) -> TmIf (subst x s t1, subst x s t2, subst x s t3)
+  | TmSucc (t1) -> TmSucc (subst x s t1)
+  | TmPred (t1) -> TmPred (subst x s t1)
+  | TmIsZero (t1) -> TmIsZero (subst x s t1)
+
+  | TmVariant (l, t1, ty) -> TmVariant (l, subst x s t1, ty)
+  | TmCase (t0, cs) ->
+    let t1' = subst x s t0 in
+    let cs' =
+      List.map (fun (l, v, t') -> 
+        let t'' = if x = v then t' else subst x s t' in
+        (l, v, t''))
+      cs in
+    TmCase (t1', cs')
+  
+  | TmRef t1 -> TmRef (subst x s t1)
+  | TmBang t1 -> TmBang (subst x s t1)
+  | TmAssn (t1, t2) -> TmAssn (subst x s t1, subst x s t2)
+  | TmRaise t1 -> TmRaise (subst x s t1)
+  | TmTry (t1, t2) -> TmTry (subst x s t1, subst x s t2)
+  | TmIsNull (ty, t1) -> TmIsNull (ty, subst x s t1)
+
+  | _ -> t)
+
+(* let fresh_loc vars = 
+  (let rec helper (n: int) =
+    if IMap.mem n vars then helper (n + 1) else n
+  in helper 0) *)
+
+let fresh_loc (mu: store) =
+  match IMap.max_binding_opt mu with
+  | Some (i, _) -> i + 1
+  | None -> 0
+
+let rec case_helper (t: term) (cs: (label * string * term) list) : term =
+  (match t with
+  | TmVariant (l, t1, _) ->
+    begin match cs with
+    | (l', s', t') :: cs' -> if l = l' then (subst s' t1 t')
+    else case_helper t cs'
+    | [] -> t
+  end
+  | _ -> t)
+  
+let rec cbv (t : term) (mu : store) : (term*store) option =
+  (match t with
+  | TmApp (TmRaise v1, _) -> Some (TmRaise v1, mu)
+  | TmApp (_, TmRaise v2) -> Some (TmRaise v2, mu)
+  | TmApp (TmNull, _) | TmApp (_, TmNull) -> Some (TmRaise (exn' "null_pointer" TmUnit), mu)
+  | TmApp (t1, t2) ->
+    (match cbv t1 mu with
+    | Some (t1', mu') -> Some (TmApp (t1', t2), mu')
+    | None ->
+      (match cbv t2 mu with
+      | Some (t2', mu') -> Some (TmApp (t1, t2'), mu')
+      | None ->
+        (match t1 with
+        | TmAbs (x, _, t1') -> Some (subst x t2 t1', mu)
+        | _ -> None)))
+    
+  | TmAbs _ -> None
+  | TmVar _ -> None
+  | TmTrue | TmFalse | TmZero -> None
+
+  | TmIf (TmRaise v, _, _) -> Some (TmRaise v, mu)
+  | TmIf (_, TmRaise v, _) -> Some (TmRaise v, mu)
+  | TmIf (_, _, TmRaise v) -> Some (TmRaise v, mu)
+  | TmIf (TmNull, _, _) -> Some (TmRaise (exn' "null_pointer" TmUnit), mu)
   | TmIf (TmTrue, t2, _) -> Some (t2, mu)
   | TmIf (TmFalse, _, t3) -> Some (t3, mu)
   | TmIf (t1, t2, t3) ->
-      begin match cbv t1 mu with
-      | Some (t1', mu') -> Some (TmIf (t1', t2, t3), mu')
-      | None -> None
-      end
-  | TmSucc t1 ->
-      begin match cbv t1 mu with
-      | Some (TmZero, mu') -> Some (TmSucc TmZero, mu')
-      | Some (TmSucc nv, mu') -> Some (TmSucc (TmSucc nv), mu')
-      | Some (t1', mu') -> Some (TmSucc t1', mu')
-      | None -> None
-      end
+    (match cbv t1 mu with
+    | Some (t1', mu) -> Some (TmIf (t1', t2, t3), mu)
+    | None -> None)
+
+  | TmSucc TmNull | TmPred TmNull | TmIsZero TmNull -> Some (TmRaise (exn' "null_pointer" TmUnit), mu)
+  | TmSucc TmRaise v | TmPred TmRaise v | TmIsZero TmRaise v
+    when is_val v -> Some (TmRaise v, mu)
+
+  | TmSucc t1 -> 
+    (match cbv t1 mu with
+    | Some (t1', mu) -> Some (TmSucc t1', mu)
+    | _ -> None)
+
   | TmPred TmZero -> Some (TmZero, mu)
-  | TmPred (TmSucc nv) -> Some (nv, mu)
+  | TmPred (TmSucc t0) when is_num_val t0 -> Some (t0, mu)
   | TmPred t1 ->
-      begin match cbv t1 mu with
-      | Some (TmZero, mu') -> Some (TmZero, mu')
-      | Some (TmSucc nv, mu') -> Some (nv, mu')
-      | Some (t1', mu') -> Some (TmPred t1', mu')
-      | None -> None
-      end
+    (match cbv t1 mu with
+    | None -> None | Some (t1', mu') -> Some (TmPred t1', mu'))
+
+  | TmUnit -> None
+
   | TmIsZero TmZero -> Some (TmTrue, mu)
-  | TmIsZero (TmSucc _) -> Some (TmFalse, mu)
-  | TmIsZero t1 ->
-      begin match cbv t1 mu with
-      | Some (TmZero, mu') -> Some (TmTrue, mu')
-      | Some (TmSucc _, mu') -> Some (TmFalse, mu')
-      | Some (t1', mu') -> Some (TmIsZero t1', mu')
-      | None -> None
-      end
-  | TmVariant (lbl, t1, _) ->
-      begin match cbv t1 mu with
-      | Some (t1', mu') -> Some (TmVariant (lbl, t1', TBot), mu')
-      | None -> None
-      end
-  | TmCase (TmVariant (lbl, v, _), branches) ->
-      begin
-        try
-          let branches' = List.map (fun (l, x, t) -> (l, (x, t))) branches in
-          let x, t = List.assoc lbl branches' in
-          let t' = subst x v t in
-          Some (t', mu)
-        with Not_found -> None
-      end
-  | TmCase (t1, branches) ->
-      begin match cbv t1 mu with
-      | Some (t1', mu') -> Some (TmCase (t1', branches), mu')
-      | None -> None
-      end
-  | TmRef t1 ->
-      begin match cbv t1 mu with
-      | Some (t1', mu') ->
-          let loc = IMap.cardinal mu' + 1 in
-          let mu'' = IMap.add loc t1' mu' in
-          Some (TmLoc loc, mu'')
-      | None -> None
-      end
-  | TmBang (TmLoc loc) ->
-      begin
-        try
-          let t' = IMap.find loc mu in
-          Some (t', mu)
-        with Not_found -> None
-      end
+  | TmIsZero (TmSucc t0) when is_num_val t0 -> Some (TmFalse, mu)
+  | TmIsZero t0 ->
+    (match cbv t0 mu with
+    | None -> None | Some (t0', mu') -> Some (TmIsZero t0', mu'))
+
+  | TmCase (TmVariant (lb, t0, ty), cs) ->
+    (if is_val t0 then Some ((case_helper (TmVariant (lb, t0, ty)) cs), mu)
+    else None)
+  | TmCase (t0, cs) -> 
+    (match cbv t0 mu with
+    | Some (t0', mu') -> Some (TmCase (t0', cs), mu')
+    | None -> None)
+  | TmVariant (lb, t1, ty) -> 
+    (match cbv t1 mu with
+    | Some (t1', mu') -> Some (TmVariant (lb, t1', ty), mu')
+    | None -> None)
+
+  | TmRef (TmRaise v) when is_val v -> Some (TmRaise v, mu)
+  | TmRef v1 when is_val v1 -> 
+    let i = (fresh_loc mu) in Some (TmLoc i, IMap.add i v1 mu)
+  | TmRef t1 -> 
+    (match cbv t1 mu with
+    | Some (t1', mu') -> Some (TmRef t1', mu')
+    | None -> None)
+
+  | TmLoc _ -> None
+
+  | TmBang (TmRaise v) when is_val v -> Some (TmRaise v, mu)
+  | TmBang TmNull -> Some (TmRaise (exn' "null_pointer" TmUnit), mu)
+  | TmBang (TmLoc l) -> 
+    (match IMap.find_opt l mu with
+    | Some t1 -> Some (t1, mu)
+    | None -> Some (TmRaise (exn' "not_found" TmUnit), mu))
   | TmBang t1 ->
-      begin match cbv t1 mu with
-      | Some (t1', mu') -> Some (TmBang t1', mu')
-      | None -> None
-      end
-  | TmAssn (TmLoc loc, t1) ->
-      begin
-        try
-          let mu' = IMap.add loc t1 mu in
-          Some (TmUnit, mu')
-        with Not_found -> None
-      end
-  | TmAssn (t1, t2) ->
-      begin match cbv t1 mu with
-      | Some (t1', mu') -> Some (TmAssn (t1', t2), mu')
-      | None -> None
-      end
-  | TmTry (TmRaise t1, t2) ->
-      begin match cbv t2 mu with
-      | Some (t2', mu') -> Some (t2', mu')
-      | None -> None
-      end
-  | TmTry (t1, t2) ->
-      begin match cbv t1 mu with
-      | Some (t1', mu') -> Some (TmTry (t1', t2), mu')
-      | None -> None
-      end
-  | TmIsNull (TRef _, TmNull) -> Some (TmTrue, mu)
-  | TmIsNull (_, TmNull) -> Some (TmFalse, mu)
-  | TmIsNull (tp, t1) ->
-      begin match cbv t1 mu with
-      | Some (t1', mu') -> Some (TmIsNull (tp, t1'), mu')
-      | None -> None
-      end
+    (match cbv t1 mu with
+    | Some (t1', mu') -> Some (TmBang t1', mu')
+    | None -> None)
+
+  | TmAssn (TmRaise v1, _) when is_val v1 -> Some (TmRaise v1, mu)
+  | TmAssn (TmLoc _, TmRaise v2) when is_val v2 -> Some (TmRaise v2, mu)
+  | TmAssn (TmNull, _) -> Some (TmRaise (exn' "null_pointer" TmUnit), mu)
+  | TmAssn (TmLoc l, v2) when is_val v2 -> 
+    (match IMap.find_opt l mu with 
+    | Some _ -> Some (TmUnit, IMap.add l v2 mu)
+    | None -> Some (TmRaise (exn' "not_found" TmUnit), mu))
+  | TmAssn (t1, t2) -> 
+    (match cbv t1 mu with
+    | Some (t1', mu') -> Some (TmAssn (t1', t2), mu')
+    | None ->
+      (match cbv t2 mu with
+      | Some (t2', mu') -> Some (TmAssn (t1, t2'), mu')
+      | None -> None))
+
+  | TmRaise TmNull -> Some (TmRaise (exn' "null_pointer" TmUnit), mu)
+  | TmRaise (TmRaise v) when is_val v -> Some (TmRaise v, mu)
   | TmRaise t1 ->
-      begin match cbv t1 mu with
-      | Some (TmTry (t', t2), mu') -> cbv t2 mu'
-      | _ -> None
-      end
-  | _ -> None
+    (match cbv t1 mu with
+    | Some (t1', mu') -> Some (TmRaise t1', mu')
+    | None -> None)
 
+  | TmTry (v1, _) when is_val v1 -> Some (v1, mu)
+  | TmTry (TmRaise v', t2) when is_val v' -> Some (TmApp (t2, v'), mu)
+  | TmTry (t1, t2) -> 
+   (match cbv t1 mu with
+    | Some (t1', mu') -> Some (TmTry (t1', t2), mu')
+    | None -> None)
 
-let rec multistep (t : term) (mu : store) : term * store =
-  match cbv t mu with
-  | Some (new_t, new_mu) -> multistep new_t new_mu
-  | None -> (t, mu)
-  | Some (TmRaise _, mu') ->
-      begin match t with
-      | TmTry (_, t2) -> multistep t2 mu'
-      | _ -> (t, mu')  (* If we encounter a TmRaise outside a try-with block, we return the original term and store *)
-      end *)
+  | TmNull -> None
 
+  | TmIsNull (_, TmRaise v11) when is_val v11 -> Some (TmFalse, mu)
+  | TmIsNull (_, TmNull) -> Some (TmTrue, mu)
+  | TmIsNull (_, TmLoc _) -> Some (TmFalse, mu)
+  | TmIsNull (tp, t1) ->
+    (match cbv t1 mu with
+    | Some (t1', mu) -> Some (TmIsNull (tp, t1'), mu)
+    | None -> Some (TmFalse, mu)))
 
-let rec subst (x : string) (s : term) (t : term) : term =
-  match t with
-  | TmVar v ->
-      if v = x then s
-      else TmVar v
-
-  | TmAbs (v, ty, body) ->
-      if v = x then
-        TmAbs (v, ty, body)
-      else if SS.mem v (fv s) then
-        let new_v = fresh_var (SS.union (fv body) (fv s)) in
-        let body' = subst v (TmVar new_v) body in
-        TmAbs (new_v, ty, subst x s body')
-      else
-        TmAbs (v, ty, subst x s body)
-
-  | TmApp (t1, t2) ->
-      TmApp (subst x s t1, subst x s t2)
-
-  | TmCase (t0, branches) ->
-      TmCase (subst x s t0,
-              branches |> List.map (fun (l, v, t) ->
-                if v = x then
-                  (l, v, t)
-                else if SS.mem v (fv s) then
-                  let new_v = fresh_var (SS.union (fv t) (fv s)) in
-                  let t' = subst v (TmVar new_v) t in
-                  (l, new_v, subst x s t')
-                else
-                  (l, v, subst x s t)
-              ))
-  | _ -> t 
-
-let rec cbv (t : term) (mu : store) : (term*store) option =
-  let update_store (mu : store) (loc : int) (v : term) : store = IMap.add loc v mu in
-  let ( >> ) ((t, mu) : (term * store)) (constructor : term -> store -> (term*store) option) : (term*store) option =
-  match cbv t mu with 
-  | None -> None 
-  | Some (t', mu') -> constructor t' mu'
-  in
-
-  (match t, mu with
-  | TmApp (TmRaise v11, t2), mu when is_val v11 && not (is_val t2) -> Some (TmRaise v11, mu)
-  | TmApp (v11, TmRaise v21), mu when is_val v11 && is_val v21 -> Some (TmRaise v21, mu)
-  | TmApp (TmAbs (x, _, body), t0), mu when is_val t0 -> Some (subst x t0 body, mu)
-  | TmApp ((TmAbs (_, _, _) as func), input), mu -> (
-    match cbv input mu with
-    | None -> None
-    | Some (input', mu') -> Some (TmApp (func, input'), mu'))
-  | TmApp (func, input), mu -> (
-    match cbv func mu with
-    | None -> None
-    | Some (func', mu') -> Some (TmApp (func', input), mu'))
-
-  | TmIf (TmTrue, t1, _), mu -> Some (t1, mu)
-  | TmIf (TmFalse, _, t2), mu -> Some (t2, mu)
-  | TmIf (t0, t1, t2), mu -> (t0, mu) >> fun t0' mu' -> Some (TmIf (t0', t1, t2), mu')
-
-  | TmSucc t0, mu -> (t0, mu) >> fun t0' mu' -> Some (TmSucc t0', mu')
-
-  | TmPred TmZero, mu -> Some (TmZero, mu)
-  | TmPred (TmSucc t0), mu when is_num_val t0 -> Some (t0, mu)
-  | TmPred t0, mu -> (t0, mu) >> fun t0' mu' -> Some (TmPred t0', mu')
-
-  | TmIsZero TmZero, mu -> Some (TmTrue, mu)
-  | TmIsZero (TmSucc t0), mu when is_num_val t0 -> Some (TmFalse, mu)
-  | TmIsZero t0, mu -> (t0, mu) >> fun t0' mu' -> Some (TmIsZero t0', mu')
-
-  | TmVariant (label, t0, _), mu -> (t0, mu) >> fun t0' mu' -> Some (TmVariant (label, t0', TBot), mu')
-  | TmCase (TmVariant (label, t0, _), cases), mu -> (
-    match List.find_opt (fun (label', _, _) -> label = label') cases with
-    | None -> None
-    | Some (_, x, body) -> Some (subst x t0 body, mu))
-  | TmCase (t0, cases), mu -> (t0, mu) >> fun t0' mu' -> Some (TmCase (t0', cases), mu')
-
-  | TmBang (TmRef t0), mu -> (t0, mu) >> fun t0' mu' -> Some (TmLoc (IMap.cardinal mu'), update_store mu' (IMap.cardinal mu') t0')
-  | TmBang (TmLoc loc), mu -> (
-    match IMap.find_opt loc mu with
-    | None -> None
-    | Some v -> Some (v, mu))
-  | TmBang (TmNull), _ -> raise_tp_exn "null_pointer"
-
-  | TmAssn (TmLoc loc, t1), mu -> (
-    match IMap.find_opt loc mu with
-    | None -> None
-    | Some _ -> (t1, mu) >> fun t1' mu' -> Some (TmUnit, update_store mu' loc t1'))
-  | TmAssn (t0, t1), mu -> (t0, mu) >> fun t0' mu' -> Some (TmAssn (t0', t1), mu')
-  (* | TmAssn (t0, t1), mu -> (t1, mu) >> fun t1' mu' -> Some (TmAssn (t0, t1'), mu') *)
-
-  | TmRef t0, mu when is_val t0 -> let l = IMap.cardinal mu in Some (TmLoc l, update_store mu l t0)
-  | TmRef t0, mu -> (t0, mu) >> fun t0' mu' -> Some (TmRef t0', mu')
-
-  | TmRaise (TmRaise t0), mu -> Some (TmRaise t0, mu)
-  | TmRaise t0, mu -> (t0, mu) >> fun t0' mu' -> Some (TmRaise t0', mu')
-
-  | TmTry (v1, _), mu when is_val v1 -> Some (v1, mu)
-  | TmTry (TmRaise v11, t2), mu -> Some (TmApp (t2, v11), mu)
-  | TmTry (t1, t2), mu -> (t1, mu) >> fun t1' mu' -> Some (TmTry (t1', t2), mu')
-
-  | TmIsNull (TRef _, TmNull), mu -> Some (TmTrue, mu)
-  | TmIsNull (_, TmNull), mu -> Some (TmFalse, mu)
-  | TmIsNull (tp, t1), mu ->
-    begin match cbv t1 mu with
-    | Some (t1', mu') -> Some (TmIsNull (tp, t1'), mu')
-    | None -> None
-    end
-
-  | _ -> None)
-
-  
 let rec multistep (t : term) (mu : store) : term*store = 
-  try
-    match cbv t mu with 
+  match cbv t mu with 
     | None -> (t, mu)
     | Some (t', mu') -> multistep t' mu'
-  with
-  | CustomException _ -> (TmVar "0", mu)
-
 
 (* Typechecking utilities *)
 
@@ -419,6 +332,8 @@ let rec type_infer (g : ctx) (s : typ_store) (t : term) : typ option =
 
 and type_check (g : ctx) (s : typ_store) (t : term) (tp : typ) : bool =
   match t with
+  | TmRaise _ -> true  (* `raise v` type checks with any type *)
+  | TmNull -> true     (* `null` type checks with any type *)
   | TmVar v -> (match lookup g v with
     | exception NotFound _ -> false
     | typ -> typ = tp)
@@ -445,39 +360,43 @@ and type_check (g : ctx) (s : typ_store) (t : term) (tp : typ) : bool =
     | TRef tp_ref -> type_check g s trm tp_ref | _ -> false)
 
   | TmLoc l -> (match IMap.find_opt l s with
-    | Some typ -> typ = tp | None -> false)
-
+    | Some typ -> typ = tp 
+    | None -> false)
   | TmBang trm -> (match type_infer g s trm with
-    | Some (TRef tp_ref) -> tp_ref = tp | _ -> false)
-
+    | Some (TRef tp_ref) -> (tp_ref = tp)
+    | _ -> false)
   | TmAssn (tl, tr) -> (match type_infer g s tl, type_infer g s tr with
-    | Some (TRef tp1), Some tp2 when tp1 = tp2 -> tp = TUnit | _ -> false)
+    | Some (TRef tp1), (Some tp2) when (tp1 = tp2) -> (tp = TUnit) 
+    | _ -> false)
+  | TmIsNull (_, trm) -> (match type_infer g s trm with
+    | Some TBot -> tp = TBool 
+    | _ -> false)
+  | TmTry (trm, handler) -> (match type_infer g s trm, type_infer g s handler with
+    | Some _, Some TBot -> true 
+    | _ -> false)
 
-  | TmIsNull (_, trm) ->
-  (match type_infer g s trm with
-    | Some TBot -> tp = TBool | _ -> false)
-
-  | TmRaise _ -> tp = TBot
-  | TmTry (trm, handler) ->
-  (match type_infer g s trm, type_infer g s handler with
-    | Some _, Some TBot -> true | _ -> false)
-
-  | TmNull -> tp = TBot
   | TmVariant (_, trm, _) -> (match type_infer g s trm with
-    | Some _ -> true | _ -> false)
+    | Some _ -> true 
+    | _ -> false)
   | TmCase (trm, _) -> (match type_infer g s trm with
-    | Some (TVariant _) -> true | _ -> false)
-
-(* 
-and type_check (g : ctx) (s : typ_store) (t : term) (tp : typ) : bool =
-  match type_infer g s t with
-  | Some inferred_type -> (inferred_type = tp)
-  | None -> false *)
+    | Some (TVariant _) -> true 
+    | _ -> false)
 
 (* Checks if the given store is well typed with respect to the given type_store
    and typing context. *)
 (* Returns true iff gamma | sigma |- mu *)
 let store_well_typed (g : ctx) (s : typ_store) (mu : store) : bool =
+  IMap.for_all (fun k v ->
+    begin match (IMap.find_opt k s) with
+    | Some ty ->
+      begin match (type_infer g s v) with
+      | Some ty2 -> ty = ty2
+      | None -> false
+      end
+    | None -> false
+    end) mu
+
+(*   
   try
     IMap.fold (fun loc term acc ->
       if not acc then raise (CustomException (TVariant [("store_error", TUnit)]))
@@ -494,4 +413,4 @@ let store_well_typed (g : ctx) (s : typ_store) (mu : store) : bool =
       print_endline ("Error in store typing: " ^ (match exn with
         | TVariant [(label, _)] -> label
         | _ -> "unknown")); 
-      false
+      false *)

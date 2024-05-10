@@ -17,6 +17,7 @@ let%test _ =
   multistep (p (spf "(%s) some[Nat] (succ 0)" (up (E.unwrap ())))) IMap.empty
   = (p "succ 0", IMap.empty)
 
+
 (************************ tp_exn ************************)
 let%test "non-zero variants" =
   match tp_exn with TVariant vars -> not (List.is_empty vars) | _ -> false
@@ -50,7 +51,6 @@ let%test _ =
     IMap.empty
   = (p "0", IMap.empty)
 
-(* 
 (* The following tests depend on type_check *)
 let%test _ =
   type_infer empty_ctx empty_store
@@ -75,7 +75,8 @@ let%test _ =
   type_infer empty_ctx empty_store (p {|
   try !null with
     λe:[].0
-|}) = None *)
+|}) = None 
+
 
 (************************ cbv ************************)
 
@@ -433,8 +434,6 @@ let%test _ =
   let t, _ = multistep t IMap.empty in
   t = p "0"
 
-
-(*
 
 (************************ type_check ************************)
 let%test _ =
@@ -1249,5 +1248,3 @@ let%test _ =
   store_well_typed empty_ctx
     IMap.(empty |> add 0 (pt "Option Bool"))
     IMap.(empty |> add 0 (p "none[Bool]"))
-
-*)

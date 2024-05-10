@@ -47,25 +47,14 @@ type term =
 
 let tp_opt (tp : typ) : typ = TVariant ([("some", tp); ("none", TUnit)]) 
 
-let tm_some (t : term) (tp : typ) : term = TmVariant ("some", t, tp_opt tp)
+let tm_some (t : term) (tp : typ) : term = TmVariant ("some", t, (tp_opt tp))
 
-let tm_none (tp : typ) : term = TmVariant ("none", TmUnit, tp_opt tp)
+let tm_none (tp : typ) : term = TmVariant ("none", TmUnit, (tp_opt tp))
 
 (* Implement an exception type as a variant. 
    There are at least three possible exceptions that you should be able to handle. 
    (These should become clear as you progress through the homework, but feel free to start
     with some obvious candidates. No points will be deducted for having extra exceptions.) *)
 let tp_exn : typ = TVariant ([("not_found", TUnit); 
-                              ("duplicate_var", TUnit);
-                              ("parse_error", TUnit);
-                              ("not_abs", TUnit);
-                              ("capture_exception", TUnit);
-                              
-                              ("type_error", TUnit);
-                              ("store_error", TUnit);
-                              ("value_error", TUnit);
-                              ("type_store_error", TUnit);
                               ("null_pointer", TUnit);
-                              ("divide_by_zero", TUnit);
-                              ("overflow", TUnit);
-                              ("other", TUnit)])
+                              ("no_match", TUnit)])

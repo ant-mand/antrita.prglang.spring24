@@ -37,6 +37,6 @@ Clflags.include_dirs :=
   ; "/Users/antritamanduva/.opam/default/lib/uutf"
   ; "/Users/antritamanduva/.opam/default/lib/xdg"
   ; "/Users/antritamanduva/.opam/default/lib/zed"
-  ; "/Users/antritamanduva/Documents/spring 2024/prg lang/psets/pset6/hw6_dune/_build/default/lib/.hw6.objs/byte"
+  ; "/Users/antritamanduva/Documents/spring 2024/prg lang/psets/antrita.prglang.spring24/pset6/hw6_dune/_build/default/lib/.hw6.objs/byte"
   ];
 UTop_main.main ();
