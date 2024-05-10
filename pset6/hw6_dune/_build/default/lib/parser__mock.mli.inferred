@@ -1,0 +1,72 @@
+type token =
+    ZERO
+  | WITH
+  | VAR of string
+  | UNITT
+  | UNIT
+  | UNDERSCORE
+  | TRY
+  | TRUE
+  | THEN
+  | SUCC
+  | SOME
+  | SEMICOLON
+  | RP
+  | REFT
+  | REF
+  | RB
+  | RAISE
+  | PRED
+  | PIPE
+  | OPTION
+  | OF
+  | NULL
+  | NONE
+  | NAT
+  | LP
+  | LB
+  | LAM
+  | ISZERO
+  | ISNULL
+  | IF
+  | FATARROW
+  | FALSE
+  | EQ
+  | EOF
+  | ELSE
+  | DOT
+  | COLON
+  | CASE
+  | BOT
+  | BOOL
+  | BANG
+  | ASSN
+  | AS
+  | ARROW
+val menhir_begin_marker : int
+val xv_var_typ_rule : string * Etlc.typ
+val xv_var : string
+val xv_typ : Etlc.typ
+val xv_separated_nonempty_list_SEMICOLON_var_typ_rule_ :
+  (string * Etlc.typ) list
+val xv_separated_nonempty_list_PIPE_case_rule_ :
+  (string * string * Etlc.term) list
+val xv_separated_list_SEMICOLON_var_typ_rule_ : (string * Etlc.typ) list
+val xv_separated_list_PIPE_case_rule_ : (string * string * Etlc.term) list
+val xv_ptyp : Etlc.typ
+val xv_prog : Etlc.term
+val xv_pat : string
+val xv_loption_separated_nonempty_list_SEMICOLON_var_typ_rule__ :
+  (string * Etlc.typ) list
+val xv_loption_separated_nonempty_list_PIPE_case_rule__ :
+  (string * string * Etlc.term) list
+val xv_lambda_expr : Etlc.term
+val xv_fun_typ : Etlc.typ
+val xv_expr : Etlc.term
+val xv_case_rule : string * string * Etlc.term
+val xv_body_expr : Etlc.term
+val xv_atomic_typ : Etlc.typ
+val xv_atomic_expr : Etlc.term
+val xv_assn_expr : Etlc.term
+val xv_app_expr : Etlc.term
+val menhir_end_marker : int

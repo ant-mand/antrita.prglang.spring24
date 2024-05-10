@@ -1,0 +1,111 @@
+# dune runtest
+# OCAMLPARAM: unset
+# Shared cache: disabled
+# Shared cache location: /Users/antritamanduva/.cache/dune/db
+# Workspace root: "/Users/antritamanduva/Documents/spring 2024/prg
+# lang/psets/pset5/hw5_dune"
+# Auto-detected concurrency: 8
+# Dune context:
+#  { name = "default"
+#  ; kind = "default"
+#  ; profile = Dev
+#  ; merlin = true
+#  ; fdo_target_exe = None
+#  ; build_dir = In_build_dir "default"
+#  ; installed_env =
+#      map
+#        { "INSIDE_DUNE" :
+#            "/Users/antritamanduva/Documents/spring 2024/prg lang/psets/pset5/hw5_dune/_build/default"
+#        ; "OCAML_COLOR" : "always"
+#        ; "OPAMCOLOR" : "always"
+#        }
+#  ; instrument_with = []
+#  }
+$ /Users/antritamanduva/.opam/default/bin/ocamlc.opt -config > /var/folders/g0/r25zyr6n4qxgsx8zq9tx2fxc0000gn/T/dune_b7c26a_output
+$ (cd _build/default && /Users/antritamanduva/.opam/default/bin/ocamlc.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -warn-error -A -w -24 -g -g -bin-annot -I lib/.hw5.inline-tests/.hw5.inline-tests.eobjs/byte -I /Users/antritamanduva/.opam/default/lib/base -I /Users/antritamanduva/.opam/default/lib/base/base_internalhash_types -I /Users/antritamanduva/.opam/default/lib/base/caml -I /Users/antritamanduva/.opam/default/lib/base/shadow_stdlib -I /Users/antritamanduva/.opam/default/lib/jane-street-headers -I /Users/antritamanduva/.opam/default/lib/ppx_compare/runtime-lib -I /Users/antritamanduva/.opam/default/lib/ppx_enumerate/runtime-lib -I /Users/antritamanduva/.opam/default/lib/ppx_hash/runtime-lib -I /Users/antritamanduva/.opam/default/lib/ppx_inline_test/config -I /Users/antritamanduva/.opam/default/lib/ppx_inline_test/runner/lib -I /Users/antritamanduva/.opam/default/lib/ppx_inline_test/runtime-lib -I /Users/antritamanduva/.opam/default/lib/ppx_sexp_conv/runtime-lib -I /Users/antritamanduva/.opam/default/lib/sexplib0 -I /Users/antritamanduva/.opam/default/lib/time_now -I lib/.hw5.objs/byte -no-alias-deps -o lib/.hw5.inline-tests/.hw5.inline-tests.eobjs/byte/dune__exe__Inline_test_runner_hw5.cmo -c -impl lib/.hw5.inline-tests/inline_test_runner_hw5.ml-gen)
+$ (cd _build/default && /Users/antritamanduva/.opam/default/bin/ocamlopt.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -warn-error -A -w -24 -g -g -I lib/.hw5.inline-tests/.hw5.inline-tests.eobjs/byte -I lib/.hw5.inline-tests/.hw5.inline-tests.eobjs/native -I /Users/antritamanduva/.opam/default/lib/base -I /Users/antritamanduva/.opam/default/lib/base/base_internalhash_types -I /Users/antritamanduva/.opam/default/lib/base/caml -I /Users/antritamanduva/.opam/default/lib/base/shadow_stdlib -I /Users/antritamanduva/.opam/default/lib/jane-street-headers -I /Users/antritamanduva/.opam/default/lib/ppx_compare/runtime-lib -I /Users/antritamanduva/.opam/default/lib/ppx_enumerate/runtime-lib -I /Users/antritamanduva/.opam/default/lib/ppx_hash/runtime-lib -I /Users/antritamanduva/.opam/default/lib/ppx_inline_test/config -I /Users/antritamanduva/.opam/default/lib/ppx_inline_test/runner/lib -I /Users/antritamanduva/.opam/default/lib/ppx_inline_test/runtime-lib -I /Users/antritamanduva/.opam/default/lib/ppx_sexp_conv/runtime-lib -I /Users/antritamanduva/.opam/default/lib/sexplib0 -I /Users/antritamanduva/.opam/default/lib/time_now -I lib/.hw5.objs/byte -I lib/.hw5.objs/native -intf-suffix .ml-gen -no-alias-deps -o lib/.hw5.inline-tests/.hw5.inline-tests.eobjs/native/dune__exe__Inline_test_runner_hw5.cmx -c -impl lib/.hw5.inline-tests/inline_test_runner_hw5.ml-gen)
+$ (cd _build/default && /Users/antritamanduva/.opam/default/bin/ocamlopt.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -warn-error -A -w -24 -g -g -o lib/.hw5.inline-tests/inline_test_runner_hw5.exe /Users/antritamanduva/.opam/default/lib/ppx_inline_test/config/inline_test_config.cmxa /Users/antritamanduva/.opam/default/lib/base/base_internalhash_types/base_internalhash_types.cmxa -I /Users/antritamanduva/.opam/default/lib/base/base_internalhash_types /Users/antritamanduva/.opam/default/lib/base/caml/caml.cmxa /Users/antritamanduva/.opam/default/lib/sexplib0/sexplib0.cmxa /Users/antritamanduva/.opam/default/lib/base/shadow_stdlib/shadow_stdlib.cmxa /Users/antritamanduva/.opam/default/lib/base/base.cmxa -I /Users/antritamanduva/.opam/default/lib/base /Users/antritamanduva/.opam/default/lib/jane-street-headers/jane_street_headers.cmxa /Users/antritamanduva/.opam/default/lib/ppx_sexp_conv/runtime-lib/ppx_sexp_conv_lib.cmxa /Users/antritamanduva/.opam/default/lib/ppx_compare/runtime-lib/ppx_compare_lib.cmxa /Users/antritamanduva/.opam/default/lib/ppx_enumerate/runtime-lib/ppx_enumerate_lib.cmxa /Users/antritamanduva/.opam/default/lib/ppx_hash/runtime-lib/ppx_hash_lib.cmxa /Users/antritamanduva/.opam/default/lib/time_now/time_now.cmxa -I /Users/antritamanduva/.opam/default/lib/time_now /Users/antritamanduva/.opam/default/lib/ppx_inline_test/runtime-lib/ppx_inline_test_lib.cmxa lib/hw5.cmxa /Users/antritamanduva/.opam/default/lib/ppx_inline_test/runner/lib/ppx_inline_test_runner_lib.cmxa -I /Users/antritamanduva/.opam/default/lib/ppx_inline_test/runner/lib lib/.hw5.inline-tests/.hw5.inline-tests.eobjs/native/dune__exe__Inline_test_runner_hw5.cmx -linkall)
+$ (cd _build/.sandbox/9743d980626d817e36ca6c4cf1034e5d/default/lib && .hw5.inline-tests/inline_test_runner_hw5.exe inline-test-runner hw5 -list-partitions) > _build/.sandbox/9743d980626d817e36ca6c4cf1034e5d/default/lib/.hw5.inline-tests/partitions-best
+$ (cd _build/.sandbox/e6b5e9f3421645ce39fb536e04d1ef9f/default/lib && .hw5.inline-tests/inline_test_runner_hw5.exe inline-test-runner hw5 -partition tests.ml -source-tree-root .. -diff-cmd -)
+> File "lib/tests.ml", line 90, characters 0-91: <<(multistep (p "unit;inr false as Bool + Bool"[...]>> is false.
+>
+> File "lib/tests.ml", line 111, characters 0-63: <<not (type_check empty_ctx (p "true as Nat") T[...]>> is false.
+>
+> File "lib/tests.ml", line 124, characters 0-77: <<type_check empty_ctx (p "inl 0 as Nat + Bool"[...]>> is false.
+>
+> File "lib/tests.ml", line 125, characters 0-80: <<type_check empty_ctx (p "inr true as Nat + Bo[...]>> is false.
+>
+> File "lib/tests.ml", line 129, characters 0-69: <<type_check empty_ctx (p "some[Nat] 0") (pt "O[...]>> is false.
+>
+> File "lib/tests.ml", line 130, characters 0-69: <<type_check empty_ctx (p "none[Bool]") (pt "Op[...]>> is false.
+>
+> File "lib/tests.ml", line 136, characters 0-103: <<(multistep    (p "option case head[Nat] nil[N[...]>> is false.
+>
+> File "lib/tests.ml", line 140, characters 0-141: <<(multistep    (p       "option case head[Nat][...]>> is false.
+>
+> File "lib/tests.ml", line 148, characters 0-282: <<(multistep    (TmApp       ((filter ()),     [...]>> is false.
+>
+> File "lib/tests.ml", line 174, characters 0-161: <<(cbv    (p       "cons[Bool] false (if false [...]>> is false.
+>
+> File "lib/tests.ml", line 181, characters 0-56: <<(cbv (p "cons[Bool] false nil[Bool]")) = None>> is false.
+>
+> File "lib/tests.ml", line 186, characters 0-127: <<(cbv (p "nil?[Bool] (if true then nil[Bool] e[...]>> is false.
+>
+> File "lib/tests.ml", line 191, characters 0-80: <<(cbv (p "head[Nat] (cons[Nat] 0 nil[Nat])")) [...]>> is false.
+>
+> File "lib/tests.ml", line 192, characters 0-64: <<(cbv (p "head[Nat] nil[Nat]")) = (Some (p "no[...]>> is false.
+>
+> File "lib/tests.ml", line 193, characters 0-66: <<(cbv (p "tail[Bool] nil[Bool]")) = (Some (p "[...]>> is false.
+>
+> File "lib/tests.ml", line 202, characters 0-133: <<(cbv    (p       {|   case inl 0 as Nat + Uni[...]>> is false.
+>
+> File "lib/tests.ml", line 215, characters 0-136: <<(cbv (p "{if true then 0 else succ 0, if true[...]>> is false.
+>
+> File "lib/tests.ml", line 219, characters 0-86: <<(cbv (p "{0, if true then false else true}.1"[...]>> is false.
+>
+> File "lib/tests.ml", line 224, characters 0-388: <<(cbv (TmApp ((iseven ()), (p "0")))) =   (Som[...]>> is false.
+>
+> File "lib/tests.ml", line 262, characters 0-328: <<(cbv    (TmIf       ((p "0? 0"), (p "true"), [...]>> is false.
+>
+> File "lib/tests.ml", line 288, characters 0-76: <<(multistep (TmApp ((iseven ()), (p "succ succ[...]>> is false.
+>
+> File "lib/tests.ml", line 289, characters 0-80: <<(multistep (TmApp ((iseven ()), (p "succ succ[...]>> is false.
+>
+> File "lib/tests.ml", line 290, characters 0-60: <<(multistep (TmApp ((fact ()), (p "0")))) = (p[...]>> is false.
+>
+> File "lib/tests.ml", line 292, characters 0-104: <<(multistep (TmApp ((fact ()), (p "succ succ s[...]>> is false.
+>
+> File "lib/tests.ml", line 296, characters 0-208: <<(multistep    (TmApp       ((reverse ()),    [...]>> is false.
+>
+> File "lib/tests.ml", line 304, characters 0-77: <<(multistep (TmApp ((unwrap ()), (p "some[Nat][...]>> is false.
+>
+> File "lib/tests.ml", line 305, characters 0-65: <<(multistep (TmApp ((unwrap ()), (p "none[Nat][...]>> is false.
+>
+> File "lib/tests.ml", line 320, characters 0-101: <<(type_infer empty_ctx (p "head[Nat] (cons[Nat[...]>> is false.
+>
+> File "lib/tests.ml", line 324, characters 0-85: <<(type_infer empty_ctx (p "head[Nat] nil[Nat]"[...]>> is false.
+>
+> File "lib/tests.ml", line 339, characters 0-86: <<(type_infer empty_ctx (p "inl 0 as Nat + Bool[...]>> is false.
+>
+> File "lib/tests.ml", line 342, characters 0-86: <<(type_infer empty_ctx (p "inr 0 as Bool + Nat[...]>> is false.
+>
+> File "lib/tests.ml", line 367, characters 0-93: <<(type_infer empty_ctx (TmApp ((reverse ()), ([...]>> is false.
+>
+> File "lib/tests.ml", line 370, characters 0-106: <<(type_infer empty_ctx (TmApp ((filter ()), (p[...]>> is false.
+>
+> File "lib/tests.ml", line 389, characters 0-92: <<type_check empty_ctx (p "head[Nat] (cons[Nat][...]>> is false.
+>
+> File "lib/tests.ml", line 392, characters 0-76: <<type_check empty_ctx (p "head[Nat] nil[Nat]")[...]>> is false.
+>
+> File "lib/tests.ml", line 405, characters 0-77: <<type_check empty_ctx (p "inl 0 as Nat + Bool"[...]>> is false.
+>
+> File "lib/tests.ml", line 406, characters 0-77: <<type_check empty_ctx (p "inr 0 as Bool + Nat"[...]>> is false.
+>
+> File "lib/tests.ml", line 419, characters 0-185: <<type_check empty_ctx   (p      {|   case inr [...]>> is false.
+>
+> File "lib/tests.ml", line 441, characters 0-86: <<type_check empty_ctx (TmApp ((reverse ()), (p[...]>> is false.
+>
+> File "lib/tests.ml", line 444, characters 0-105: <<type_check empty_ctx (TmApp ((filter ()), (p [...]>> is false.
+>
+> FAILED 40 / 83 tests
+[2]

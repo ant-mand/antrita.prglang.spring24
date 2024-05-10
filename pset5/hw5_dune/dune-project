@@ -1,0 +1,5 @@
+(lang dune 3.14)
+
+(name hw5)
+
+(using menhir 2.1)

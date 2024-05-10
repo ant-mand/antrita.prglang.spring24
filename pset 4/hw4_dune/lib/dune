@@ -1,0 +1,14 @@
+(library
+ (name hw4)
+  (preprocess
+   (pps ppx_inline_test))
+ (inline_tests))
+
+(menhir
+ (modules parser))
+
+(ocamllex lexer)
+
+(env
+  (dev
+    (flags (:standard -warn-error -A))))

@@ -1,0 +1,25 @@
+type token =
+    ZERO
+  | VAR of string
+  | TRUE
+  | THEN
+  | SUCC
+  | RP
+  | PRED
+  | NAT
+  | LP
+  | LAM
+  | ISZERO
+  | IF
+  | FALSE
+  | EOF
+  | ELSE
+  | DOT
+  | COLON
+  | BOOL
+  | ARROW
+val menhir_begin_marker : int
+val xv_typ : Tlc.typ
+val xv_prog : Tlc.term
+val xv_expr : Tlc.term
+val menhir_end_marker : int

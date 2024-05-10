@@ -1,0 +1,36 @@
+File "lib/tests.ml", line 8, characters 0-107: <<(multistep (p (spf "(%s) some[Nat] 0" (up (E.[...]>> is false.
+
+File "lib/tests.ml", line 12, characters 0-105: <<(multistep (p (spf "(%s) none[Nat]" (up (E.un[...]>> is false.
+
+File "lib/tests.ml", line 16, characters 0-119: <<(multistep (p (spf "(%s) some[Nat] (succ 0)" [...]>> is false.
+
+File "lib/tests.ml", line 25, characters 0-116: <<(multistep (p (spf {| try !null with     λe:[...]>> threw Hw6.Lang.CustomException(_).
+  Raised at Hw6__Lang.raise_tp_exn in file "lib/lang.ml", line 38, characters 22-82
+  Called from Hw6__Lang.cbv.(>>) in file "lib/lang.ml", line 247, characters 8-16
+  Called from Hw6__Lang.multistep in file "lib/lang.ml", line 322, characters 8-16
+  Called from Hw6__Tests.(fun) in file "lib/tests.ml", line 26, characters 2-79
+
+File "lib/tests.ml", line 32, characters 0-240: <<(multistep    (p       (spf          {| try ([...]>> is false.
+
+File "lib/tests.ml", line 47, characters 0-127: <<(multistep    (TmTry ((TmBang (TmLoc 0)), (p [...]>> is false.
+
+File "lib/tests.ml", line 89, characters 0-149: <<(cbv (p (spf "raise (raise %s)" exn)) IMap.em[...]>> is false.
+
+File "lib/tests.ml", line 98, characters 0-161: <<(cbv (p (spf "(\206\187x:Bool.0) (raise %s)" [...]>> is false.
+
+File "lib/tests.ml", line 103, characters 0-162: <<(cbv (p (spf "(raise %s) (\206\187x:Bool.0) "[...]>> is false.
+
+File "lib/tests.ml", line 108, characters 0-101: <<match cbv (p "null 0") IMap.empty with | Some[...]>> is false.
+
+File "lib/tests.ml", line 116, characters 0-123: <<match cbv (p "if null then true else false") [...]>> is false.
+
+File "lib/tests.ml", line 125, characters 0-104: <<match cbv (p "succ null") IMap.empty with | S[...]>> is false.
+
+File "lib/tests.ml", line 130, characters 0-161: <<match cbv (p (spf "succ (raise %s)" exn)) IMa[...]>> is false.
+
+File "lib/tests.ml", line 140, characters 0-104: <<match cbv (p "pred null") IMap.empty with | S[...]>> is false.
+
+File "lib/tests.ml", line 145, characters 0-161: <<match cbv (p (spf "pred (raise %s)" exn)) IMa[...]>> is false.
+
+FAILED 15 / 20 tests
+(base) antritamanduva@Antritas-MacBook-Air lib % 

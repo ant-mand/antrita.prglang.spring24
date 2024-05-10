@@ -1,0 +1,74 @@
+type token =
+    ZERO
+  | VAR of string
+  | UNITT
+  | UNIT
+  | UNDERSCORE
+  | TWO
+  | TRUE
+  | TIMES
+  | THEN
+  | TAIL
+  | SUCC
+  | SOME
+  | SMALL_OPTION
+  | SEMICOLON
+  | RP
+  | RCB
+  | RB
+  | PRED
+  | PLUS
+  | PIPE
+  | OPTION
+  | ONE
+  | OF
+  | NONE
+  | NIL
+  | NAT
+  | LP
+  | LIST
+  | LETREC
+  | LET
+  | LCB
+  | LB
+  | LAM
+  | ISZERO
+  | ISNIL
+  | INR
+  | INL
+  | IN
+  | IF
+  | HEAD
+  | FIX
+  | FATARROW
+  | FALSE
+  | EQ
+  | EOF
+  | ELSE
+  | DOT
+  | CONS
+  | COMMA
+  | COLON
+  | CASE
+  | BOOL
+  | AS
+  | ARROW
+val menhir_begin_marker : int
+val xv_typ : Etlc.typ
+val xv_sum_typ : Etlc.typ
+val xv_seq_expr : Etlc.term
+val xv_ptyp : Etlc.typ
+val xv_proj_expr : Etlc.term
+val xv_prog : Etlc.term
+val xv_prod_typ : Etlc.typ
+val xv_pat : string
+val xv_lambda_expr : Etlc.term
+val xv_fun_typ : Etlc.typ
+val xv_expr : Etlc.term
+val xv_cons_expr : Etlc.term
+val xv_body_expr : Etlc.term
+val xv_atomic_typ : Etlc.typ
+val xv_atomic_expr : Etlc.term
+val xv_ascr_expr : Etlc.term
+val xv_app_expr : Etlc.term
+val menhir_end_marker : int

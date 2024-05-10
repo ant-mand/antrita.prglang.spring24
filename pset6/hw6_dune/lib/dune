@@ -1,0 +1,15 @@
+(library
+ (name hw6)
+  (preprocess
+   (pps ppx_inline_test))
+ (inline_tests)
+ (libraries menhirLib))
+
+(menhir
+ (modules parser))
+
+(ocamllex lexer)
+
+(env
+  (dev
+    (flags (:standard -warn-error -A))))
